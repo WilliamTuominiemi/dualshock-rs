@@ -34,7 +34,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             loop {
                 match ds_handle.read_interrupt(ds_endpoint, &mut buf, Duration::from_millis(1000)) {
                     Ok(len) => {
-                        println!("Received {} bytes: {:02x?}", len, &buf[..len]);
+                        //println!("Received {} bytes: {:02x?}", len, &buf[..len]);
+                        let button: &u8 = &buf[..len][5];
+
+                        //println!("{:?}", button);
+                        
+                        match button {
+                            40 => println!("X pressed"),
+                            24 => println!("Square pressed"),
+                            136 => println!("Triangle pressed"),
+                            72 => println!("Circle pressed"),
+                            _ => (),
+                        }
+                            
                     }
                     Err(rusb::Error::Timeout) => {
                         continue;

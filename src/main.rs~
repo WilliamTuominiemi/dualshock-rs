@@ -7,10 +7,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for device in context.devices()?.iter() {
         let desc = device.device_descriptor()?;
 
-        //println!("Vendor: {:04x}, Product: {:04x}", 
-        //    desc.vendor_id(), 
-        //    desc.product_id());
-
         if desc.vendor_id() == 0x54c && desc.product_id() == 0x05c4 {
             println!("PS4 controller detected");
 
@@ -20,13 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             for interface in config_desc.interfaces() {
                 for interface_desc in interface.descriptors() {
-                    println!("Interface: {}", interface_desc.interface_number());
                     for endpoint_desc in interface_desc.endpoint_descriptors() {
-                        println!("  Endpoint: 0x{:02x}, Direction: {:?}, TransferType: {:?}",
-                            endpoint_desc.address(),
-                            endpoint_desc.direction(),
-                            endpoint_desc.transfer_type());
-
                         if endpoint_desc.transfer_type() ==  TransferType::Interrupt &&
                            endpoint_desc.direction() == Direction::In {
                             ds_endpoint = endpoint_desc.address();
@@ -44,7 +34,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             loop {
                 match ds_handle.read_interrupt(ds_endpoint, &mut buf, Duration::from_millis(1000)) {
                     Ok(len) => {
-                        println!("Received {} bytes: {:02x?}", len, &buf[..len]);
+                        //println!("Received {} bytes: {:02x?}", len, &buf[..len]);
+                        let button: &u8 = &buf[..len][5];
+
+                        //println!("{:?}", button);
+                        
+                        match button {
+                            40 => println!("X pressed"),
+                            24 => println!("Square pressed"),
+                            136 => println!("Triangle pressed"),
+                            72 => println!("Circle pressed"),
+                            _ => (),
+                        }
+                            
                     }
                     Err(rusb::Error::Timeout) => {
                         continue;
