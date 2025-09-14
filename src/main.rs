@@ -1,4 +1,4 @@
-use rusb::{Context, Device, DeviceHandle, UsbContext};
+use rusb::{Context, Device, DeviceHandle, UsbContext, Direction, TransferType};
 use std::time::Duration;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -7,12 +7,44 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for device in context.devices()?.iter() {
         let desc = device.device_descriptor()?;
 
-        println!("Vendor: {:04x}, Product: {:04x}", 
-            desc.vendor_id(), 
-            desc.product_id());
-
         if desc.vendor_id() == 0x54c && desc.product_id() == 0x05c4 {
             println!("PS4 controller detected");
+
+            let config_desc = device.config_descriptor(0)?;
+            
+            let mut ds_endpoint = 0x00;
+
+            for interface in config_desc.interfaces() {
+                for interface_desc in interface.descriptors() {
+                    for endpoint_desc in interface_desc.endpoint_descriptors() {
+                        if endpoint_desc.transfer_type() ==  TransferType::Interrupt &&
+                           endpoint_desc.direction() == Direction::In {
+                            ds_endpoint = endpoint_desc.address();
+                        }
+                    }
+                }
+            }
+
+            let mut ds_handle = device.open()?;
+
+            let _ = ds_handle.claim_interface(0);
+
+            let mut buf = [0u8; 64];
+            
+            loop {
+                match ds_handle.read_interrupt(ds_endpoint, &mut buf, Duration::from_millis(1000)) {
+                    Ok(len) => {
+                        println!("Received {} bytes: {:02x?}", len, &buf[..len]);
+                    }
+                    Err(rusb::Error::Timeout) => {
+                        continue;
+                    }
+                    Err(e) => {
+                        eprintln!("Error reading device: {}", e);
+                        break;
+                    }
+                }
+            }
         }
     }
 
