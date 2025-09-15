@@ -45,15 +45,8 @@ fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::error:
                 let button: &u8 = &buf[..len][5];
 
                 //println!("{:?}", button);
-                
-                match button {
-                    40 => println!("X pressed"),
-                    24 => println!("Square pressed"),
-                    136 => println!("Triangle pressed"),
-                    72 => println!("Circle pressed"),
-                    _ => (),
-                }
-                    
+                ds_button(button);            
+                                    
             }
             Err(rusb::Error::Timeout) => {
                 continue;
@@ -66,4 +59,14 @@ fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::error:
     }
     
     Ok(())
+}
+
+fn ds_button(button: &u8) {
+    match button {
+        40 => println!("X pressed"),
+        24 => println!("Square pressed"),
+        136 => println!("Triangle pressed"),
+        72 => println!("Circle pressed"),
+        _ => (),
+    }
 }
