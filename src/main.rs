@@ -63,10 +63,16 @@ fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::error:
 
 fn ds_button(button: &u8) {
     match button {
+        // Action buttons
         40 => println!("X pressed"),
         24 => println!("Square pressed"),
         136 => println!("Triangle pressed"),
         72 => println!("Circle pressed"),
+        // Dpad
+        00 => println!("Up pressed"),
+        02 => println!("Right pressed"),
+        04 => println!("Down pressed"),
+        06 => println!("Left pressed"),
         _ => (),
     }
 }
