@@ -1,5 +1,19 @@
-use rusb::{Context, Device, DeviceHandle, UsbContext, Direction, TransferType};
+use rusb::{Context, Device, UsbContext, Direction, TransferType};
 use std::time::Duration;
+
+#[derive(Debug)]
+#[derive(Clone)]
+struct Input {
+    name: String,
+    code: u8,
+    pressed: bool,
+}
+
+impl Input {
+    fn press(&mut self) {
+        self.pressed = true;
+    }
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let context = Context::new()?;
@@ -32,31 +46,43 @@ fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::error:
         }
     }
 
-    let mut ds_handle = device.open()?;
+    let ds_handle = device.open()?;
 
     let _ = ds_handle.claim_interface(0);
 
     let mut buf = [0u8; 64];
     
-    let mut ds_layout: Vec<(&str, bool)> = vec![
-        ("cross", false), ("square", false), ("triangle", false), ("circle", false),
-        ("down", false), ("left", false), ("up", false), ("right", false),
-        ("L2", false), ("L1", false), ("R2", false), ("R1", false),
-        ("Share", false), ("Options", false), ("L_joystick", false), ("R_joystick", false)
+    let mut ds_layout = vec![
+        // Action buttons
+        Input {name: String::from("cross"), code: 40, pressed: false},
+        Input {name: String::from("square"), code: 24, pressed: false},
+        Input {name: String::from("triangle"), code: 136, pressed: false},
+        Input {name: String::from("circle"), code: 72, pressed: false},
+        // D-pad
+        Input {name: String::from("down"), code: 04, pressed: false},
+        Input {name: String::from("left"), code: 06, pressed: false},
+        Input {name: String::from("up"), code: 00, pressed: false},
+        Input {name: String::from("right"), code: 02, pressed: false},
+        // Triggers
+        Input {name: String::from("L2"), code: 0x04, pressed: false},
+        Input {name: String::from("L1"), code: 0x01, pressed: false},
+        Input {name: String::from("R2"), code: 0x08, pressed: false},
+        Input {name: String::from("R1"), code: 0x02, pressed: false},
+        // Flat buttons 
+        Input {name: String::from("options"), code: 0x10, pressed: false},
+        Input {name: String::from("share"), code: 0x20, pressed: false},
+        // Joysticks
+        Input {name: String::from("left_joystick"), code: 0x40, pressed: false},
+        Input {name: String::from("right_joystick"), code: 0x80, pressed: false},
     ];
     
     loop {
         match ds_handle.read_interrupt(ds_endpoint, &mut buf, Duration::from_millis(1000)) {
             Ok(len) => {
-                //println!("Received {} bytes: {:02x?}", len, &buf[..len]);
                 let button: &u8 = &buf[..len][5];
                 let special: &u8 = &buf[..len][6];
 
-
-                println!("{:?}", ds_layout);
-
-                ds_button(button, &mut ds_layout);            
-                ds_special(special, &mut ds_layout);                    
+                ds_button(button, special, &mut ds_layout);            
             }
             Err(rusb::Error::Timeout) => {
                 continue;
@@ -71,32 +97,12 @@ fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
-fn ds_button(button: &u8, ds_layout: &mut Vec<(&str, bool)>) {
-    match button {
-        // Action buttons
-        40 => ds_layout[0].1 = true, // Cross
-        24 =>  ds_layout[1].1 = true, // Square
-        136 => ds_layout[2].1 = true, // Triangle
-        72 => ds_layout[3].1 = true, // Circle
-        // Dpad
-        04 => ds_layout[4].1 = true, // Down
-        06 => ds_layout[5].1 = true, // Left
-        00 => ds_layout[6].1 = true, // Up
-        02 => ds_layout[7].1 = true, // Right
-        _ => (),
+fn ds_button(button: &u8, special: &u8, ds_layout: &mut Vec<Input>) {
+    for input in ds_layout.iter_mut() {
+        if !input.pressed && (*button == input.code || *special == input.code) {
+            input.press();
+            println!("{:?}", input);
+        }
     }
 }
 
-fn ds_special(input: &u8, ds_layout: &mut Vec<(&str, bool)>) {
-    match input {
-        0x04 => ds_layout[8].1 = true, // L2
-        0x01 => ds_layout[9].1 = true, // L1
-        0x08 => ds_layout[10].1 = true, // R2
-        0x02 => ds_layout[11].1 = true, // R1
-        0x10 => ds_layout[12].1 = true, // Share
-        0x20 => ds_layout[13].1 = true, // Options
-        0x40 => ds_layout[14].1 = true, // Left joystick
-        0x80 => ds_layout[15].1 = true, // Right joystick
-        _ => (),
-    }
-}

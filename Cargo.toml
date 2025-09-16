@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 rusb = "0.9.4"
+console = "0.15"
