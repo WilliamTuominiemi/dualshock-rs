@@ -1,4 +1,5 @@
 use rusb::{Device, Direction, TransferType, UsbContext};
+use std::thread;
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
@@ -144,6 +145,7 @@ pub fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::er
                 break;
             }
         }
+        thread::sleep(Duration::from_millis(1));
     }
 
     Ok(())
