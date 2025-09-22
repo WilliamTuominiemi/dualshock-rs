@@ -1,4 +1,5 @@
 use rusb::{Device, Direction, TransferType, UsbContext};
+use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::Duration;
 
@@ -15,7 +16,10 @@ impl Input {
     }
 }
 
-pub fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn ds_listen<T: UsbContext>(
+    device: Device<T>,
+    thread_tx: Sender<String>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let config_desc = device.config_descriptor(0)?;
 
     let mut ds_endpoint = 0x00;
@@ -135,7 +139,7 @@ pub fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::er
     loop {
         match ds_handle.read_interrupt(ds_endpoint, &mut buf, Duration::from_millis(1000)) {
             Ok(len) => {
-                ds_button(&buf[..len], &mut ds_layout);
+                ds_button(&buf[..len], &mut ds_layout, &thread_tx);
             }
             Err(rusb::Error::Timeout) => {
                 continue;
@@ -151,18 +155,18 @@ pub fn ds_listen<T: UsbContext>(device: Device<T>) -> Result<(), Box<dyn std::er
     Ok(())
 }
 
-fn ds_button(data: &[u8], ds_layout: &mut Vec<Vec<Input>>) {
+fn ds_button(data: &[u8], ds_layout: &mut Vec<Vec<Input>>, thread_tx: &Sender<String>) {
     for input in &mut ds_layout[0] {
         if !input.pressed && data[5] == input.code {
             input.press();
-            println!("{:?}", input);
+            thread_tx.send(input.name.clone()).unwrap();
         }
     }
 
     for input in &mut ds_layout[1] {
         if !input.pressed && data[6] == input.code {
             input.press();
-            println!("{:?}", input);
+            thread_tx.send(input.name.clone()).unwrap();
         }
     }
 }
