@@ -1,5 +1,9 @@
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use ratatui::{Frame, widgets::Paragraph};
+use ratatui::{
+    Frame,
+    layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders, Paragraph, Wrap},
+};
 use rusb::{Context, UsbContext};
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
@@ -44,14 +48,53 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn draw(frame: &mut Frame, messages: &[String]) {
+    let horizontal_chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage(15),
+            Constraint::Percentage(30),
+            Constraint::Percentage(15),
+        ])
+        .split(frame.area());
+
+    let middle_vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+        .split(horizontal_chunks[1]);
+
     let text = if messages.is_empty() {
         "Press q to quit".to_string()
     } else {
         messages.join("\n")
     };
 
-    let paragraph = Paragraph::new(text);
-    frame.render_widget(paragraph, frame.area());
+    let left_container = Block::default().borders(Borders::LEFT | Borders::BOTTOM | Borders::TOP);
+    let left_vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+        .split(horizontal_chunks[0]);
+    let left_top = Block::default().borders(Borders::LEFT | Borders::TOP);
+    frame.render_widget(left_top, left_vertical[0]);
+    let left_bottom = Block::default().borders(Borders::LEFT | Borders::BOTTOM | Borders::RIGHT);
+    frame.render_widget(left_bottom, left_vertical[1]);
+    frame.render_widget(left_container, horizontal_chunks[0]);
+
+    let center_container = Block::default().borders(Borders::TOP | Borders::BOTTOM);
+    let center_paragraph = Paragraph::new(text.clone())
+        .block(center_container)
+        .wrap(Wrap { trim: true });
+    frame.render_widget(center_paragraph, middle_vertical[0]);
+
+    let right_container = Block::default().borders(Borders::RIGHT | Borders::BOTTOM | Borders::TOP);
+    let right_vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+        .split(horizontal_chunks[2]);
+    let right_top = Block::default().borders(Borders::RIGHT | Borders::TOP);
+    frame.render_widget(right_top, right_vertical[0]);
+    let right_bottom = Block::default().borders(Borders::LEFT | Borders::BOTTOM | Borders::RIGHT);
+    frame.render_widget(right_bottom, right_vertical[1]);
+    frame.render_widget(right_container, horizontal_chunks[2]);
 }
 
 fn handle_events() -> std::io::Result<bool> {
