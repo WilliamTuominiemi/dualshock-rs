@@ -114,12 +114,12 @@ pub fn ds_listen<T: UsbContext>(
             // Flat buttons
             Input {
                 name: String::from("options"),
-                code: 0x10,
+                code: 0x20,
                 pressed: false,
             },
             Input {
                 name: String::from("share"),
-                code: 0x20,
+                code: 0x10,
                 pressed: false,
             },
             // Joysticks
