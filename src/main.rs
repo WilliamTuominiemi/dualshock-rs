@@ -27,9 +27,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         while let Ok(msg) = rx.try_recv() {
             messages.push(msg);
-            if messages.len() > 20 {
-                messages.remove(0);
-            }
         }
 
         terminal.draw(|frame| draw(frame, &messages))?;
