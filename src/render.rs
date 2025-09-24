@@ -43,6 +43,14 @@ fn draw_button(
     button
 }
 
+fn button_border_style(messages: &[String], key: &str) -> Style {
+    if messages.iter().any(|s| s == key) {
+        Style::default().fg(Color::Green)
+    } else {
+        Style::default()
+    }
+}
+
 fn draw_left_side(frame: &mut Frame, messages: &[String], horizontal_chunks: &std::rc::Rc<[Rect]>) {
     let left_container = Block::default().borders(Borders::LEFT | Borders::BOTTOM | Borders::TOP);
     let left_vertical = Layout::default()
@@ -54,81 +62,51 @@ fn draw_left_side(frame: &mut Frame, messages: &[String], horizontal_chunks: &st
     let left_inner_area = left_top.inner(left_vertical[0]);
     frame.render_widget(left_top, left_vertical[0]);
 
-    let l2_style = if messages.iter().any(|s| s == "L2") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let l2_button = draw_button(
         frame,
         left_inner_area.x + 5,
         left_inner_area.y,
         15,
         3,
-        l2_style,
+        button_border_style(messages, "L2"),
     );
 
-    let l1_style = if messages.iter().any(|s| s == "L1") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let l1_button = draw_button(
         frame,
         left_inner_area.x + 5,
         left_inner_area.y + l2_button.height,
         15,
         2,
-        l1_style,
+        button_border_style(messages, "L1"),
     );
 
-    let up_style = if messages.iter().any(|s| s == "up") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let up_button = draw_button(
         frame,
         left_inner_area.x + 10,
         left_inner_area.y + l2_button.height + l1_button.height,
         5,
         3,
-        up_style,
+        button_border_style(messages, "up"),
     );
 
-    let left_style = if messages.iter().any(|s| s == "left") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let left_button = draw_button(
         frame,
         left_inner_area.x + 5,
         left_inner_area.y + l2_button.height + l1_button.height + up_button.height,
         5,
         3,
-        left_style,
+        button_border_style(messages, "left"),
     );
 
-    let right_style = if messages.iter().any(|s| s == "right") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let right_button = draw_button(
         frame,
         left_inner_area.x + 15,
         left_inner_area.y + l2_button.height + l1_button.height + up_button.height,
         5,
         3,
-        right_style,
+        button_border_style(messages, "right"),
     );
 
-    let down_style = if messages.iter().any(|s| s == "down") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let down_button = draw_button(
         frame,
         left_inner_area.x + 10,
@@ -139,7 +117,7 @@ fn draw_left_side(frame: &mut Frame, messages: &[String], horizontal_chunks: &st
             + right_button.height,
         5,
         3,
-        down_style,
+        button_border_style(messages, "down"),
     );
 
     let left_bottom = Block::default().borders(Borders::LEFT | Borders::BOTTOM | Borders::RIGHT);
@@ -162,81 +140,51 @@ fn draw_right_side(
     let right_inner_area = right_top.inner(right_vertical[0]);
     frame.render_widget(right_top, right_vertical[0]);
 
-    let r2_style = if messages.iter().any(|s| s == "R2") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let r2_button = draw_button(
         frame,
         right_inner_area.x + 5,
         right_inner_area.y,
         15,
         3,
-        r2_style,
+        button_border_style(messages, "R2"),
     );
 
-    let r1_style = if messages.iter().any(|s| s == "R1") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let r1_button = draw_button(
         frame,
         right_inner_area.x + 5,
         right_inner_area.y + r2_button.height,
         15,
         2,
-        r1_style,
+        button_border_style(messages, "R1"),
     );
 
-    let triangle_style = if messages.iter().any(|s| s == "triangle") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let triangle_button = draw_button(
         frame,
         right_inner_area.x + 10,
         right_inner_area.y + r2_button.height + r1_button.height,
         5,
         3,
-        triangle_style,
+        button_border_style(messages, "triangle"),
     );
 
-    let square_style = if messages.iter().any(|s| s == "square") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let square_button = draw_button(
         frame,
         right_inner_area.x + 5,
         right_inner_area.y + r2_button.height + r1_button.height + triangle_button.height,
         5,
         3,
-        square_style,
+        button_border_style(messages, "square"),
     );
 
-    let circle_style = if messages.iter().any(|s| s == "circle") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let circle_button = draw_button(
         frame,
         right_inner_area.x + 15,
         right_inner_area.y + r2_button.height + r1_button.height + triangle_button.height,
         5,
         3,
-        circle_style,
+        button_border_style(messages, "circle"),
     );
 
-    let cross_style = if messages.iter().any(|s| s == "cross") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let cross_button = draw_button(
         frame,
         right_inner_area.x + 10,
@@ -247,7 +195,7 @@ fn draw_right_side(
             + circle_button.height,
         5,
         3,
-        cross_style,
+        button_border_style(messages, "cross"),
     );
 
     let right_bottom = Block::default().borders(Borders::LEFT | Borders::BOTTOM | Borders::RIGHT);
@@ -267,32 +215,22 @@ fn draw_center(frame: &mut Frame, messages: &[String], middle_vertical: &std::rc
     let center_inner_top_area = center_top.inner(center_vertical_top[0]);
     frame.render_widget(center_top, center_vertical_top[0]);
 
-    let share_style = if messages.iter().any(|s| s == "share") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let share_button = draw_button(
         frame,
         center_inner_top_area.x,
         center_inner_top_area.y,
         5,
         4,
-        share_style,
+        button_border_style(messages, "share"),
     );
 
-    let options_style = if messages.iter().any(|s| s == "options") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let options_button = draw_button(
         frame,
         center_inner_top_area.x + center_inner_top_area.width - 5,
         center_inner_top_area.y,
         5,
         4,
-        options_style,
+        button_border_style(messages, "options"),
     );
 
     let center_vertical_bottom = Layout::default()
@@ -304,32 +242,22 @@ fn draw_center(frame: &mut Frame, messages: &[String], middle_vertical: &std::rc
     let center_inner_bottom_area = center_bottom.inner(center_vertical_top[1]);
     frame.render_widget(center_bottom, center_vertical_top[1]);
 
-    let l_joystick_style = if messages.iter().any(|s| s == "left_joystick") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let l_joystick_button = draw_button(
         frame,
         center_inner_bottom_area.x,
         center_inner_bottom_area.y,
         8,
         5,
-        l_joystick_style,
+        button_border_style(messages, "left_joystick"),
     );
 
-    let r_joystick_style = if messages.iter().any(|s| s == "right_joystick") {
-        Style::default().fg(Color::Green)
-    } else {
-        Style::default()
-    };
     let r_joystick_button = draw_button(
         frame,
         center_inner_bottom_area.x + center_inner_bottom_area.width - 8,
         center_inner_bottom_area.y,
         8,
         5,
-        r_joystick_style,
+        button_border_style(messages, "right_joystick"),
     );
 
     frame.render_widget(center_container, middle_vertical[0]);
