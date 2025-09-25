@@ -9,9 +9,9 @@ pub fn draw(frame: &mut Frame, messages: &[String]) {
     let horizontal_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(15),
             Constraint::Percentage(30),
-            Constraint::Percentage(15),
+            Constraint::Percentage(40),
+            Constraint::Percentage(30),
         ])
         .split(frame.area());
 
